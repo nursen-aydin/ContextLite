@@ -10,7 +10,8 @@ htmlcov/
 
 # Gizli bilgiler ve ortam değişkenleri
 .env
-data/
+data/*
+!data/.gitkeep
 *.db
 *.db-*
 *.sqlite
