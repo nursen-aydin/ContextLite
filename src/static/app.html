@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextLite</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-container" class="app-layout">
+
+        <!-- Backdrop for mobile sidebar -->
+        <div id="sidebar-backdrop" class="backdrop hidden"></div>
+
+        <!-- SIDEBAR -->
+        <aside id="app-sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                    </svg>
+                    <span>ContextLite</span>
+                </div>
+                <button class="btn-icon mobile-close-btn" id="sidebar-close" aria-label="Menüyü Kapat">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="sidebar-actions">
+                <button class="btn btn-primary btn-block" id="new-chat-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Yeni Sohbet
+                </button>
+            </div>
+
+            <!-- Conversations List -->
+            <div class="conversations-scroll-area">
+                <div class="section-title">Geçmiş Sohbetler</div>
+                <div id="conversations-list" class="nav-list">
+                    <!-- JS Injected -->
+                </div>
+            </div>
+
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle" role="separator"
+                aria-label="Geçmiş sohbet alanının yüksekliğini ayarla" aria-orientation="horizontal"
+                aria-valuemin="120" tabindex="0"></div>
+
+            <div class="sidebar-footer">
+                <nav class="nav-list main-nav">
+                    <button class="nav-item active" id="nav-dashboard">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        Ana Panel
+                    </button>
+                    <button class="nav-item" id="nav-chat">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Sohbet
+                    </button>
+                    <button class="nav-item" id="nav-models">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                            <path d="M3 5v6c0 1.7 4 3 9 3s9-1.3 9-3V5"></path>
+                            <path d="M3 11v6c0 1.7 4 3 9 3s9-1.3 9-3v-6"></path>
+                        </svg>
+                        Modeller
+                    </button>
+                    <button class="nav-item" id="nav-projects">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                            </path>
+                        </svg>
+                        Projeler
+                    </button>
+                    <button class="nav-item" id="nav-files">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                            <polyline points="13 2 13 9 20 9"></polyline>
+                        </svg>
+                        Dosyalar
+                    </button>
+                    <button class="nav-item" id="nav-token-saver">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                        </svg>
+                        Token Tasarrufu
+                    </button>
+                    <button class="nav-item" id="nav-guides">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                        </svg>
+                        Kılavuzlar
+                    </button>
+                    <button class="nav-item" id="nav-settings">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path
+                                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                            </path>
+                        </svg>
+                        Ayarlar
+                    </button>
+                    <button class="nav-item" id="nav-usage">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Kullanım
+                    </button>
+                </nav>
+                <div class="user-menu-area">
+                    <div class="user-avatar" id="user-avatar-initials">?</div>
+                    <div class="user-details">
+                        <span id="user-name" class="u-name">Kullanıcı</span>
+                        <span id="user-role" class="u-role">Rol</span>
+                    </div>
+                    <select id="theme-select" class="hidden" aria-hidden="true" tabindex="-1">
+                        <option value="system">Sistem</option>
+                        <option value="light">Açık</option>
+                        <option value="dark">Koyu</option>
+                        <option value="warm">Sıcak</option>
+                    </select>
+                    <div class="theme-picker" id="theme-picker">
+                        <button type="button" class="theme-menu-button" id="theme-menu-button"
+                            aria-label="Tema: Sistem" aria-haspopup="menu" aria-expanded="false" title="Temayı değiştir">
+                            <span id="theme-current-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+                                    <path d="M8 22h8M12 18v4"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="theme-menu hidden" id="theme-menu" role="menu" aria-label="Tema seçimi">
+                            <button type="button" class="theme-option" data-theme="system" role="menuitemradio" aria-checked="false">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"></rect><path d="M8 22h8M12 18v4"></path></svg>
+                                <span>Sistem</span><span class="theme-option-check">✓</span>
+                            </button>
+                            <button type="button" class="theme-option" data-theme="light" role="menuitemradio" aria-checked="false">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>
+                                <span>Açık</span><span class="theme-option-check">✓</span>
+                            </button>
+                            <button type="button" class="theme-option" data-theme="dark" role="menuitemradio" aria-checked="false">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                                <span>Koyu</span><span class="theme-option-check">✓</span>
+                            </button>
+                            <button type="button" class="theme-option" data-theme="warm" role="menuitemradio" aria-checked="false">
+                                <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7z"></path><circle cx="12" cy="9" r="2"></circle></svg>
+                                <span>Sıcak</span><span class="theme-option-check">✓</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="btn-icon" id="logout-btn" title="Çıkış Yap">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2"
+                            fill="none">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN VIEW PORT -->
+        <main class="main-viewport">
+
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-panel active">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Ana Panel</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        <!-- Unverified Banner -->
+                        <div id="unverified-banner" class="hidden"
+                            style="margin-bottom: 24px; padding: 16px 20px; background-color: var(--bg-surface); border: 1px solid var(--border-light); border-left: 4px solid var(--warning); border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+                            <div>
+                                <h4 style="margin: 0 0 4px 0; color: var(--text-primary); font-size: 15px;">Hesabın
+                                    henüz doğrulanmadı</h4>
+                                <p style="margin: 0; color: var(--text-secondary); font-size: 14px;">E-posta adresini
+                                    doğrulayarak ek güvenlik özelliklerini ve haricî bağlantıları kullanabilirsin.</p>
+                            </div>
+                            <button class="btn btn-secondary" onclick="window.location.href='/account/verify'"
+                                style="white-space: nowrap;">Hesabını Doğrula</button>
+                        </div>
+
+                        <!-- Welcome Section -->
+                        <div
+                            style="margin-bottom: 32px; padding: 24px; background-color: var(--bg-surface-hover); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 12px;">
+                            <h2 style="margin: 0; font-size: 24px;">Hoş geldin, <span
+                                    id="dash-user-name">Kullanıcı</span> 👋</h2>
+                            <div
+                                style="display: flex; gap: 12px; align-items: center; color: var(--text-secondary); font-size: 14px;">
+                                <span id="dash-user-email">email@example.com</span>
+                                <span id="dash-email-status" class="badge badge-success">Doğrulandı</span>
+                            </div>
+                        </div>
+
+                        <!-- Recent Projects -->
+                        <div style="margin-bottom: 32px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3 style="margin: 0;">Son Projeler</h3>
+                                <button class="btn btn-secondary btn-sm" onclick="switchView('projects')">Tümünü
+                                    Gör</button>
+                            </div>
+                            <div class="projects-grid" id="dash-projects-container">
+                                <!-- JS Injected or Empty State -->
+                            </div>
+                        </div>
+
+                        <!-- Stats Summary -->
+                        <div>
+                            <h3 style="margin-bottom: 16px;">Özet Kullanım (Bu Ay)</h3>
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-title">Aylık İstekler</div>
+                                    <div class="stat-value" id="dash-stat-reqs">0</div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-title">Toplam Maliyet</div>
+                                    <div class="stat-value highlight" id="dash-stat-cost">$0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT VIEW -->
+            <div id="view-chat" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn" id="sidebar-open" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title" id="chat-title">Sohbet</h2>
+                    </div>
+                    <div class="topbar-right">
+                        <select id="chat-project-select" class="form-select hidden" aria-label="Belge Bağlamı">
+                            <option value="">Belge kullanma</option>
+                        </select>
+                        <label class="token-saver-toggle tooltip-wrapper" for="token-saver-checkbox">
+                            <input type="checkbox" id="token-saver-checkbox" aria-describedby="token-saver-tooltip">
+                            <span class="token-saver-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                    <path d="M2 12l10 5 10-5"></path>
+                                </svg>
+                            </span>
+                            <span class="toggle-label">Token tasarrufu</span>
+                            <span class="token-saver-track" aria-hidden="true"></span>
+                            <span class="tooltip" id="token-saver-tooltip" role="tooltip">Uzun istemleri yerel modelle kısaltır ve sohbet geçmişini azaltarak ana modele daha az token gönderir.</span>
+                        </label>
+                        <div class="select-wrapper">
+                            <select id="mode-select" class="form-select" aria-label="Sağlayıcı Seçimi">
+                                <option value="" disabled>Sağlayıcı seçin...</option>
+                                <option value="foundry" selected>Foundry Local</option>
+                                <option value="lm_studio">LM Studio</option>
+                                <option value="ollama">Ollama</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="gemini">Gemini</option>
+                            </select>
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2"
+                                fill="none" class="select-icon">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <select id="model-select" class="form-select hidden" aria-label="Model Seçimi">
+                            <option value="">Önce sağlayıcı seçin</option>
+                        </select>
+                    </div>
+                </header>
+
+                <div class="chat-scroll-area" id="chat-messages">
+                    <div class="empty-state" id="welcome-message">
+                        <div class="empty-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                        <h2>Nasıl yardımcı olabilirim?</h2>
+                        <p>Sorunuzu aşağıdaki alana yazarak sohbete başlayabilirsiniz.</p>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <form id="chat-form" class="chat-form">
+                        <textarea id="chat-input" placeholder="Mesajınızı buraya yazın... (Yeni satır için Shift+Enter)"
+                            rows="1" aria-label="Mesaj Kutusu"></textarea>
+                        <button type="submit" id="send-button" class="btn-primary icon-only" aria-label="Gönder">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </form>
+                    <div class="chat-footer-note">ContextLite yapay zeka tarafından üretilen içerikleri gösterir, lütfen
+                        doğrulayın.</div>
+                </div>
+            </div>
+
+            <!-- MODEL MANAGER VIEW -->
+            <div id="view-models" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Foundry Modelleri</h2>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="models-refresh-btn">Yenile</button>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        <section class="settings-section">
+                            <div class="section-header">
+                                <h3>Yerel model kataloğu</h3>
+                                <p>Bir modeli “Kur” düğmesiyle cihazınıza indirin. İndirme arka planda sürer; aynı anda yalnızca bir model kurulur.</p>
+                            </div>
+                            <div id="model-manager-status" class="model-manager-status">Modeller yükleniyor…</div>
+                            <div id="models-grid" class="models-grid"></div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+                        <div id="view-settings" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                        </button>
+                        <h2 class="view-title">Ayarlar</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        
+                        <section class="settings-section">
+                            <div class="section-header">
+                                <h3>Görünüm</h3>
+                                <p>Uygulama temasını belirleyin.</p>
+                            </div>
+                            <div class="card max-w-lg" style="margin-bottom:20px;">
+                                <div class="form-group">
+                                    <label>Tema Seçimi</label>
+                                    <select id="settings-theme-select" class="form-select" onchange="document.getElementById('theme-select').value=this.value; document.getElementById('theme-select').dispatchEvent(new Event('change'));">
+                                        <option value="system">Sistem</option>
+                                        <option value="light">Açık</option>
+                                        <option value="dark">Koyu</option>
+                                        <option value="warm">Sıcak</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="settings-section">
+                            <div class="section-header">
+                                <h3>Yerel Yapay Zeka Sağlayıcıları</h3>
+                                <p>Bilgisayarınızdaki veya yerel ağınızdaki LLM servislerini bağlayın.</p>
+                            </div>
+                            
+                            <!-- Foundry Local -->
+                            <div class="card max-w-lg" style="margin-bottom:20px;">
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                                        <strong>Foundry Local SDK</strong>
+                                        <span id="settings-foundry-badge" class="badge" style="background-color:var(--text-muted); color:white;">Bilinmiyor</span>
+                                    </div>
+                                    <p id="settings-foundry-message" style="font-size: 0.9em; color:var(--text-muted); margin-bottom: 15px;">Durum kontrol ediliyor...</p>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label>Kurulu Modeller</label>
+                                        <ul id="settings-foundry-models" style="list-style-type: disc; margin-left: 20px; font-size: 0.9em; color:var(--text-secondary);"><li>Yükleniyor...</li></ul>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <button type="button" class="btn btn-secondary" onclick="testLocalProvider('foundry')">Bağlantıyı Test Et</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- LM Studio -->
+                            <div class="card max-w-lg" style="margin-bottom:20px;">
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                                        <strong>LM Studio (localhost:1234)</strong>
+                                        <span id="settings-lm_studio-badge" class="badge" style="background-color:var(--text-muted); color:white;">Bilinmiyor</span>
+                                    </div>
+                                    <p id="settings-lm_studio-message" style="font-size: 0.9em; color:var(--text-muted); margin-bottom: 15px;">Sunucu durumu kontrol ediliyor...</p>
+                                    <div style="margin-bottom: 15px;">
+                                        <label>Kurulu Modeller</label>
+                                        <ul id="settings-lm_studio-models" style="list-style-type: disc; margin-left: 20px; font-size: 0.9em; color:var(--text-secondary);"><li>Yükleniyor...</li></ul>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <button type="button" class="btn btn-secondary" onclick="testLocalProvider('lm_studio')">Bağlantıyı Test Et</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Ollama -->
+                            <div class="card max-w-lg" style="margin-bottom:20px;">
+                                <div class="form-group">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px;">
+                                        <strong>Ollama (localhost:11434)</strong>
+                                        <span id="settings-ollama-badge" class="badge" style="background-color:var(--text-muted); color:white;">Bilinmiyor</span>
+                                    </div>
+                                    <p id="settings-ollama-message" style="font-size: 0.9em; color:var(--text-muted); margin-bottom: 15px;">Servis durumu kontrol ediliyor...</p>
+                                    <div style="margin-bottom: 15px;">
+                                        <label>Kurulu Modeller</label>
+                                        <ul id="settings-ollama-models" style="list-style-type: disc; margin-left: 20px; font-size: 0.9em; color:var(--text-secondary);"><li>Yükleniyor...</li></ul>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                                        <button type="button" class="btn btn-secondary" onclick="testLocalProvider('ollama')">Bağlantıyı Test Et</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="settings-section" id="cloud-providers-section">
+                            <div class="section-header">
+                                <h3>Bulut Yapay Zekâ Sağlayıcıları</h3>
+                                <p>İsteğe bağlıdır. Kendi API anahtarınızı eklediğinizde OpenAI veya Gemini modellerini sohbet ekranında kullanabilirsiniz. Bulut seçildiğinde mesaj içeriği ilgili sağlayıcıya gönderilir.</p>
+                            </div>
+                            <div id="providers-container" class="providers-grid">
+                                <div class="card" style="color:var(--text-secondary);font-size:14px;">Sağlayıcılar yükleniyor…</div>
+                            </div>
+                        </section>
+
+                        <section class="settings-section">
+                            <div class="section-header">
+                                <h3>Test Alanı</h3>
+                                <p>Aşağıdan sağlayıcı ve modeli seçerek kısa bir test mesajı gönderebilirsiniz. Bu mesaj sohbet geçmişine yazılmaz.</p>
+                            </div>
+                            <div class="card max-w-lg" style="margin-bottom:20px;">
+                                <div class="form-group">
+                                    <label>Sağlayıcı</label>
+                                    <select id="test-sandbox-provider" class="form-select" onchange="loadSandboxModels()">
+                                        <option value="foundry">Foundry Local</option>
+                                        <option value="lm_studio">LM Studio</option>
+                                        <option value="ollama">Ollama</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Model</label>
+                                    <select id="test-sandbox-model" class="form-select">
+                                        <option value="">Önce sağlayıcı seçin...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-primary" onclick="runSandboxTest()" id="sandbox-test-btn">Test Mesajı Gönder</button>
+                                </div>
+                                <div id="sandbox-test-result" style="margin-top: 15px; padding: 10px; background: var(--bg-page); border-radius: 6px; font-size: 0.9em; min-height: 40px; display: none;">
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- USAGE VIEW -->
+            <div id="view-usage" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Kullanım ve Tasarruf</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-title">Bugünkü İstekler</div>
+                                <div class="stat-value" id="stat-today-reqs">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Aylık İstekler</div>
+                                <div class="stat-value" id="stat-month-reqs">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Yerel / Bulut Oranı</div>
+                                <div class="stat-value" id="stat-local-cloud">0 / 0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Gerçekleşen Maliyet</div>
+                                <div class="stat-value highlight" id="stat-cost">$0.00</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Önlenen Maliyet</div>
+                                <div class="stat-value success-text" id="stat-prevented-cost">$0.00</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Toplam Token</div>
+                                <div class="stat-value" id="stat-tokens">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Tasarruf Edilen Token</div>
+                                <div class="stat-value success-text" id="stat-prevented-tokens">0</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-title">Ortalama Yanıt Süresi</div>
+                                <div class="stat-value" id="stat-avg-time">0 ms</div>
+                            </div>
+                        </div>
+
+                        <section class="settings-section mt-8">
+                            <div class="section-header">
+                                <h3>İstek Geçmişi</h3>
+                            </div>
+                            <div class="card overflow-x-auto">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Tarih</th>
+                                            <th>Model / Mod</th>
+                                            <th>Durum</th>
+                                            <th>Token (In/Out)</th>
+                                            <th>Tasarruf</th>
+                                            <th>Süre</th>
+                                            <th>Maliyet</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usage-history-body">
+                                        <!-- JS Injected -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROJECTS VIEW -->
+            <div id="view-projects" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Projeler</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <div>
+                                <h3 style="margin-bottom: 4px;">Projeleriniz</h3>
+                                <p style="color: var(--text-secondary); font-size: 14px;">Sohbetlerinizi ve
+                                    dosyalarınızı organize edin.</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="openCreateProjectModal()">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2"
+                                    fill="none">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Yeni Proje
+                            </button>
+                        </div>
+                        <div class="projects-grid" id="projects-container">
+                            <!-- JS Injected -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FILES VIEW -->
+            <div id="view-files" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Dosyalar</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        <div class="card">
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="files-project-select">Proje Seçin</label>
+                                <select id="files-project-select" class="form-select" onchange="loadFilesList()">
+                                    <option value="">Lütfen Bir Proje Seçin</option>
+                                </select>
+                            </div>
+
+                            <table class="table" id="files-table"
+                                style="width: 100%; border-collapse: collapse; display: none;">
+                                <thead>
+                                    <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
+                                        <th style="padding: 10px;">Dosya Adı</th>
+                                        <th style="padding: 10px;">Boyut</th>
+                                        <th style="padding: 10px;">Yüklenme Tarihi</th>
+                                        <th style="padding: 10px;">Durum</th>
+                                        <th style="padding: 10px;">İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="files-table-body">
+                                </tbody>
+                            </table>
+                            <div id="no-project-warning"
+                                style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                <p>Dosyalarınızı görmek için bir proje seçin veya yeni proje oluşturun.</p>
+                                <button class="btn btn-primary" onclick="openProjectModal()">Proje Oluştur</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GUIDES VIEW -->
+            <div id="view-guides" class="view-panel hidden">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Kılavuzlar</h2>
+                    </div>
+                </header>
+                <div class="scroll-content">
+                    <div class="content-wrapper">
+                        <div class="guides-grid"
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                            <div class="card">
+                                <h4>1. ContextLite'a Başlangıç</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Uygulamanın temel özellikleri
+                                    ve yerel yapay zeka deneyimi hakkında bilgi.</p>
+                            </div>
+                            <div class="card">
+                                <h4>2. Proje Oluşturma</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);"><a href="#"
+                                        onclick="switchView('projects'); return false;">Projeler</a> sayfasından yeni
+                                    projeleri nasıl organize edeceğinizi öğrenin.</p>
+                            </div>
+                            <div class="card">
+                                <h4>3. PDF ve TXT Yükleme</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Proje oluştururken veya <a
+                                        href="#" onclick="switchView('files'); return false;">Dosyalar</a> menüsünden
+                                    belge aktarımı.</p>
+                            </div>
+                            <div class="card">
+                                <h4>4. Belgelere Dayalı Soru Sorma</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Sohbet ekranında
+                                    belgelerinizle güvenli etkileşime girme yöntemleri.</p>
+                            </div>
+                            <div class="card">
+                                <h4>5. Yerel Model Seçme</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);"><a href="#"
+                                        onclick="switchView('settings'); return false;">Ayarlar</a> sayfasından uygun
+                                    modeli aktif etme rehberi.</p>
+                            </div>
+                            <div class="card">
+                                <h4>6. Foundry Local Bağlantısını Kontrol Etme</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Bağlantı durumunuzu nasıl
+                                    gözden geçirebileceğinize dair detaylar.</p>
+                            </div>
+                            <div class="card">
+                                <h4>7. Token Tasarrufu Kullanımı</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);"><a href="#"
+                                        onclick="switchView('token-saver'); return false;">Token Tasarrufu</a>
+                                    sayfasında uzun metinlerinizi nasıl kısaltırsınız?</p>
+                            </div>
+                            <div class="card">
+                                <h4>8. Kaynak ve Sayfa Gösterimi</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Sohbet ekranında cevapların
+                                    altında yer alan PDF/TXT sayfa atıflarını anlama.</p>
+                            </div>
+                            <div class="card">
+                                <h4>9. Gizlilik ve Yerel Çalışma</h4>
+                                <p style="font-size: 0.9em; color: var(--text-secondary);">Bulut API'lerin iptal
+                                    edilmesi ve tam çevrimdışı gizliliğin sağlanması.</p>
+                            </div>
+                            <div class="card">
+                                <h4>10. Sorun Giderme</h4>
+                                <ul style="font-size: 0.9em; color: var(--text-secondary); padding-left: 20px;">
+                                    <li>Yerel modele bağlanılamıyor</li>
+                                    <li>Model listesi boş</li>
+                                    <li>PDF işlenemedi</li>
+                                    <li>Belgeden cevap bulunamadı</li>
+                                    <li>Token Tasarrufu çalışmıyor</li>
+                                    <li>Mesaj üretimi yarıda kesildi</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOKEN SAVER VIEW -->
+            <div id="view-token-saver" class="view-panel bg-image-wrapper bg-token-saver">
+                <header class="topbar">
+                    <div class="topbar-left">
+                        <button class="btn-icon mobile-menu-btn sidebar-opener" aria-label="Menüyü Aç">
+                            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2"
+                                fill="none">
+                                <line x1="3" y1="12" x2="21" y2="12"></line>
+                                <line x1="3" y1="6" x2="21" y2="6"></line>
+                                <line x1="3" y1="18" x2="21" y2="18"></line>
+                            </svg>
+                        </button>
+                        <h2 class="view-title">Token Tasarrufu</h2>
+                    </div>
+                </header>
+                <div class="scroll-content" style="display: flex; flex-direction: column; height: calc(100vh - 60px);">
+                    <div class="content-wrapper" style="flex: 1; display: flex; flex-direction: column; padding: 24px;">
+                        <p style="color: var(--text-secondary); margin-bottom: 24px;">Uzun istemlerinizi (prompt) yerel
+                            yapay zekâ modeli ile kısaltarak token ve maliyet tasarrufu sağlayın. İşlem sadece yerel
+                            cihazınızda gerçekleşir.</p>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; flex: 1;">
+                            <!-- Sol Panel: Orijinal Prompt -->
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 12px;">
+                                        <h3 style="margin: 0; font-size: 16px;">Orijinal İstem</h3>
+                                        <select id="ts-model-select" class="form-select"
+                                            style="padding: 4px 8px; font-size: 12px; height: 28px;">
+                                            <option value="">Ollama Modeli Seç...</option>
+                                        </select>
+                                    </div>
+                                    <span id="ts-original-tokens" class="badge"
+                                        style="background-color: var(--bg-surface-hover); color: var(--text-secondary);"
+                                        title="Kelime bazlı yaklaşık sayım">0 Yaklaşık Token</span>
+                                </div>
+                                <textarea id="ts-input-prompt"
+                                    placeholder="Kısaltmak istediğiniz uzun metni veya kodu buraya yapıştırın..."
+                                    style="flex: 1; resize: none; width: 100%; padding: 16px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background-color: var(--bg-surface); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;"></textarea>
+                                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                    <button class="btn btn-secondary" id="ts-clear-btn">Temizle</button>
+                                    <button class="btn btn-secondary hidden" id="ts-stop-btn"
+                                        style="color: var(--error);">Durdur</button>
+                                    <button class="btn btn-primary" id="ts-optimize-btn">Tasarruflu Hâle Getir</button>
+                                </div>
+                            </div>
+
+                            <!-- Sağ Panel: Optimize Edilmiş Prompt -->
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <h3 style="margin: 0; font-size: 16px;">Optimize Edilmiş İstem</h3>
+                                    <span id="ts-optimized-stats" class="badge"
+                                        style="background-color: var(--success-bg); color: var(--success); display: none;"></span>
+                                </div>
+                                <textarea id="ts-output-prompt" readonly
+                                    placeholder="Optimize edilmiş istem burada görünecek..."
+                                    style="flex: 1; resize: none; width: 100%; padding: 16px; border: 1px solid var(--border-light); border-radius: var(--radius-md); background-color: var(--bg-page); color: var(--text-primary); font-family: inherit; font-size: 14px; outline: none;"></textarea>
+                                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                                    <button class="btn btn-secondary" id="ts-copy-btn" disabled>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor"
+                                            stroke-width="2" fill="none">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                        </svg>
+                                        Kopyala
+                                    </button>
+                                    <button class="btn btn-secondary" id="ts-use-in-chat-btn" disabled>Sohbette
+                                        Kullan</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Confirm Modal Template -->
+    <div id="confirm-modal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <h3 class="modal-title" id="modal-title">Onay</h3>
+            <p class="modal-desc" id="modal-desc">Bu işlemi yapmak istediğinize emin misiniz?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="modal-cancel">İptal</button>
+                <button class="btn btn-danger" id="modal-confirm">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal Template -->
+    <div id="project-modal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <h3 class="modal-title" id="project-modal-title">Yeni Proje</h3>
+            <div class="form-group" style="margin-top: 16px;">
+                <label for="project-name-input">Proje Adı</label>
+                <input type="text" id="project-name-input" class="form-input" placeholder="Örn: Araştırma 2026"
+                    required>
+            </div>
+            <div class="form-group">
+                <label for="project-desc-input">Açıklama (Opsiyonel)</label>
+                <textarea id="project-desc-input" class="form-input" rows="3"
+                    placeholder="Proje hakkında kısa bilgi..."></textarea>
+            </div>
+            <div class="form-group" id="project-file-group">
+                <label for="project-files-input">Belge Ekle (İsteğe Bağlı, PDF/TXT)</label>
+                <input type="file" id="project-files-input" class="form-input" accept=".pdf,.txt" multiple>
+                <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">Seçilen belgeler projeye eklenip
+                    metin analizinden geçirilir.</p>
+            </div>
+            <input type="hidden" id="project-id-input">
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeProjectModal()">İptal</button>
+                <button class="btn btn-primary" onclick="saveProject()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

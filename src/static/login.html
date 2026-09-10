@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContextLite - Giriş</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .auth-layout {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+            background-color: var(--bg-page);
+        }
+        .auth-footer {
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        .auth-footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+        .auth-view { display: none; }
+        .auth-view.active { display: block; }
+        .success-alert {
+            margin-bottom: 20px;
+            padding: 12px;
+            background-color: var(--success-bg);
+            color: var(--success);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-layout">
+        <div class="auth-card">
+            <div style="margin-bottom: 24px; text-align: left;">
+                <a href="/" style="color: var(--text-secondary); text-decoration: none; font-weight: 500; padding: 8px 0; display: inline-block;">&larr; Ana sayfaya dön</a>
+            </div>
+            <div class="auth-header">
+                <a href="/" style="display: flex; flex-direction: column; align-items: center; text-decoration: none; color: inherit;">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="brand-icon">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h1 id="main-title">ContextLite</h1>
+                </a>
+                <p id="main-desc">Hesabınıza giriş yapın.</p>
+            </div>
+            
+            <div id="status-message" class="hidden"></div>
+            <div id="unverified-block" class="error-alert hidden" style="margin-bottom: 16px;">
+                <div style="margin-bottom: 10px;">E-posta adresiniz henüz doğrulanmamış.</div>
+                <button type="button" id="login-resend-btn" class="btn btn-secondary btn-block">
+                    Aktivasyon e-postasını yeniden gönder
+                </button>
+                <div id="login-resend-status" style="margin-top: 8px; font-size: 12px;"></div>
+            </div>
+            
+            <form id="login-form" class="form-stack auth-view">
+                <div class="form-group">
+                    <label for="login-email">E-posta Adresiniz</label>
+                    <input type="email" id="login-email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Parola</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="login-password" required autocomplete="current-password">
+                        <button type="button" class="btn-icon toggle-password" aria-label="Parolayı Göster/Gizle">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="auth-options-row">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                        <input type="checkbox" id="remember-me"> Beni Hatırla
+                    </label>
+                    <a href="#" id="goto-forgot" style="color:var(--accent-primary); text-decoration:none;">Parolamı Unuttum</a>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block auth-submit-btn" id="login-submit">Giriş Yap</button>
+                <div class="auth-footer">
+                    Hesabınız yok mu? <a href="/signup">Ücretsiz kayıt olun</a>
+                </div>
+            </form>
+            
+            <!-- FORGOT PASSWORD VIEW -->
+            <form id="forgot-form" class="form-stack auth-view">
+                <div class="form-group">
+                    <label for="forgot-email">E-posta Adresiniz</label>
+                    <input type="email" id="forgot-email" required autocomplete="email">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="forgot-submit">Sıfırlama Bağlantısı Gönder</button>
+                <div class="auth-footer">
+                    <a href="#" id="goto-login-from-forgot">Giriş ekranına dön</a>
+                </div>
+            </form>
+
+            <!-- RESET PASSWORD VIEW -->
+            <form id="reset-form" class="form-stack auth-view">
+                <div class="form-group">
+                    <label for="reset-password">Yeni Parola</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="reset-password" required minlength="8" maxlength="64" autocomplete="new-password">
+                        <button type="button" class="btn-icon toggle-password" aria-label="Parolayı Göster/Gizle">
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="reset-submit">Parolayı Güncelle</button>
+                <div class="auth-footer">
+                    <a href="/login">Giriş ekranına dön</a>
+                </div>
+            </form>
+
+            <div id="verify-view" class="auth-view" style="text-align: center;">
+                <p>Doğrulanıyor, lütfen bekleyin...</p>
+            </div>
+            
+            <div id="verify-success-view" class="auth-view" style="text-align: center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" style="margin-bottom: 16px;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <h2 style="margin-bottom: 12px; font-size: 20px;">E-posta adresin doğrulandı</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;">Hesabın başarıyla etkinleştirildi. Artık ContextLite’a giriş yapabilirsin.</p>
+                <button class="btn btn-primary btn-block" onclick="window.location.href='/login'" style="margin-bottom: 12px;">Giriş Yap</button>
+                <p style="font-size: 13px; color: var(--text-tertiary);" id="verify-redirect-text">5 saniye içinde yönlendirileceksiniz...</p>
+            </div>
+            
+            <div id="verify-error-view" class="auth-view" style="text-align: center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" style="margin-bottom: 16px;">
+                    <circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+                <h2 style="margin-bottom: 12px; font-size: 20px;">Geçersiz Bağlantı</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 24px; font-size: 14px;" id="verify-error-msg">Bu doğrulama bağlantısı geçersiz, kullanılmış veya süresi dolmuş.</p>
+                <button class="btn btn-primary btn-block" onclick="window.location.href='/login'">Giriş Ekranına Dön</button>
+            </div>
+
+
+
+            <div id="global-error" class="error-alert hidden" aria-live="polite"></div>
+        </div>
+    </div>
+
+    <script>
+        // Check if already logged in
+        fetch('/api/auth/me').then(res => {
+            if (res.ok) window.location.href = '/app';
+        }).catch(() => {});
+
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const input = btn.previousElementSibling;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+                } else {
+                    input.type = 'password';
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+                }
+            });
+        });
+
+        const views = document.querySelectorAll('.auth-view');
+        const title = document.getElementById('main-title');
+        const desc = document.getElementById('main-desc');
+        const globalError = document.getElementById('global-error');
+        const statusMsg = document.getElementById('status-message');
+
+        function switchView(viewId) {
+            views.forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            globalError.classList.add('hidden');
+        }
+        
+        function showSuccess(msg) {
+            statusMsg.textContent = msg;
+            statusMsg.className = 'success-alert';
+        }
+        function showError(msg) {
+            globalError.textContent = msg;
+            globalError.classList.remove('hidden');
+        }
+
+        document.getElementById('goto-forgot').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('forgot-form');
+            title.textContent = 'Parolamı Unuttum';
+            desc.textContent = 'Parolanızı sıfırlamak için e-posta adresinizi girin.';
+        });
+        document.getElementById('goto-login-from-forgot').addEventListener('click', (e) => {
+            e.preventDefault();
+            switchView('login-form');
+            title.textContent = 'ContextLite';
+            desc.textContent = 'Hesabınıza giriş yapın.';
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const path = window.location.pathname;
+        
+        let unverifiedEmail = "";
+
+        // Routing logic
+        if (path === '/verify-email') {
+            title.textContent = 'E-posta Doğrulama';
+            desc.textContent = '';
+            switchView('verify-view');
+            
+            if (token) {
+                fetch('/api/auth/verify-email', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({token})
+                }).then(async res => {
+                    const data = await res.json();
+                    if (res.ok) {
+                        switchView('verify-success-view');
+                        title.textContent = "";
+                        desc.textContent = "";
+                        
+                        let countdown = 5;
+                        const redirText = document.getElementById('verify-redirect-text');
+                        const iv = setInterval(() => {
+                            countdown--;
+                            if (countdown <= 0) {
+                                clearInterval(iv);
+                                window.location.href = '/login';
+                            } else {
+                                redirText.textContent = `${countdown} saniye içinde yönlendirileceksiniz...`;
+                            }
+                        }, 1000);
+                        
+                    } else {
+                        switchView('verify-error-view');
+                        title.textContent = "";
+                        desc.textContent = "";
+                        document.getElementById('verify-error-msg').textContent = data.detail || 'Doğrulama başarısız.';
+                    }
+                }).catch(err => {
+                    switchView('verify-error-view');
+                    title.textContent = "";
+                    desc.textContent = "";
+                    document.getElementById('verify-error-msg').textContent = 'Ağ hatası.';
+                });
+            } else {
+                switchView('verify-error-view');
+                title.textContent = "";
+                desc.textContent = "";
+            }
+        } else if (path === '/reset-password') {
+            title.textContent = 'Yeni Parola Belirleyin';
+            desc.textContent = 'Güvenli bir parola girdiğinizden emin olun.';
+            switchView('reset-form');
+            if (!token) {
+                showError('Geçersiz bağlantı.');
+                document.getElementById('reset-form').style.display = 'none';
+            }
+        } else {
+            switchView('login-form');
+        }
+
+        let loginResendTimer = null;
+        document.getElementById('login-resend-btn').addEventListener('click', async () => {
+            if (!unverifiedEmail) return;
+            const btn = document.getElementById('login-resend-btn');
+            const status = document.getElementById('login-resend-status');
+            btn.disabled = true;
+            btn.textContent = "Gönderiliyor...";
+            status.textContent = "";
+            
+            try {
+                const res = await fetch('/api/auth/resend-verification', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email: unverifiedEmail})
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    status.textContent = data.message || "E-posta gönderildi.";
+                    status.style.color = "var(--success)";
+                    
+                    let timeLeft = 60;
+                    loginResendTimer = setInterval(() => {
+                        timeLeft--;
+                        if (timeLeft <= 0) {
+                            clearInterval(loginResendTimer);
+                            btn.disabled = false;
+                            btn.textContent = "Aktivasyon e-postasını yeniden gönder";
+                        } else {
+                            btn.textContent = `Yeniden Gönder (${timeLeft}s)`;
+                        }
+                    }, 1000);
+                } else {
+                    status.textContent = data.detail || "Gönderim başarısız.";
+                    status.style.color = "var(--error)";
+                    btn.disabled = false;
+                    btn.textContent = "Aktivasyon e-postasını yeniden gönder";
+                }
+            } catch (err) {
+                status.textContent = "Ağ hatası oluştu.";
+                status.style.color = "var(--error)";
+                btn.disabled = false;
+                btn.textContent = "Aktivasyon e-postasını yeniden gönder";
+            }
+        });
+
+        // Login Submit
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const rememberMe = document.getElementById('remember-me').checked;
+            const submitBtn = document.getElementById('login-submit');
+            
+            submitBtn.disabled = true; submitBtn.textContent = 'Giriş Yapılıyor...';
+            statusMsg.classList.add('hidden');
+            globalError.classList.add('hidden');
+            document.getElementById('unverified-block').classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password, remember_me: rememberMe})
+                });
+                
+                if (res.ok) {
+                    window.location.href = '/app';
+                } else {
+                    const data = await res.json();
+                    if (data.detail && data.detail.error_code === 'UNVERIFIED_EMAIL') {
+                        unverifiedEmail = data.detail.email;
+                        document.getElementById('unverified-block').classList.remove('hidden');
+                    } else {
+                        showError(data.detail || 'Giriş başarısız.');
+                    }
+                }
+            } catch (err) {
+                showError('Ağ hatası oluştu.');
+            } finally {
+                submitBtn.disabled = false; submitBtn.textContent = 'Giriş Yap';
+            }
+        });
+
+        // Forgot Submit
+        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgot-email').value;
+            const submitBtn = document.getElementById('forgot-submit');
+            
+            submitBtn.disabled = true; submitBtn.textContent = 'Gönderiliyor...';
+            globalError.classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showSuccess(data.message);
+                    switchView('login-form');
+                } else {
+                    showError(data.detail || 'İstek başarısız.');
+                }
+            } catch (err) {
+                showError('Ağ hatası oluştu.');
+            } finally {
+                submitBtn.disabled = false; submitBtn.textContent = 'Sıfırlama Bağlantısı Gönder';
+            }
+        });
+
+        // Reset Submit
+        document.getElementById('reset-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('reset-password').value;
+            const submitBtn = document.getElementById('reset-submit');
+            
+            submitBtn.disabled = true; submitBtn.textContent = 'Güncelleniyor...';
+            globalError.classList.add('hidden');
+            
+            try {
+                const res = await fetch('/api/auth/reset-password', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({token, password})
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showSuccess(data.message);
+                    switchView('login-form');
+                    title.textContent = 'ContextLite';
+                    desc.textContent = 'Hesabınıza giriş yapın.';
+                } else {
+                    showError(data.detail || 'Sıfırlama başarısız.');
+                }
+            } catch (err) {
+                showError('Ağ hatası oluştu.');
+            } finally {
+                submitBtn.disabled = false; submitBtn.textContent = 'Parolayı Güncelle';
+            }
+        });
+    </script>
+</body>
+</html>

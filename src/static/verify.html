@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hesabını Doğrula - ContextLite</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .verify-container { max-width: 680px; margin: 40px auto; padding: 0 20px 48px; }
+        .verify-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 28px; }
+        .verify-header h2 { margin: 0; }
+        .back-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; white-space: nowrap; }
+        .verify-section { background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: var(--radius-md); padding: 24px; margin-bottom: 20px; }
+        .verify-section h3 { margin: 0 0 12px; font-size: 18px; }
+        .status-box { padding: 16px; border-radius: var(--radius-sm); background: var(--bg-surface-hover); }
+        .status-box.warning { background: var(--warning-bg); border-left: 4px solid var(--warning); }
+        .status-box.success { background: var(--success-bg); border-left: 4px solid var(--success); }
+        .status-title { margin: 0; font-size: 14px; font-weight: 650; }
+        .status-copy { margin: 6px 0 0; color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
+        .action-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+        .code-panel { margin-top: 16px; padding: 18px; border: 1px dashed var(--accent-primary); border-radius: var(--radius-sm); background: var(--bg-surface-hover); }
+        .demo-code { font-size: 30px; font-weight: 750; letter-spacing: 8px; color: var(--accent-primary); margin: 8px 0 16px; }
+        .code-entry { display: flex; gap: 10px; }
+        .code-entry input { flex: 1; min-width: 0; letter-spacing: 4px; font-size: 18px; text-align: center; }
+        .permission-item { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 16px 0; border-bottom: 1px solid var(--border-light); }
+        .permission-item:last-child { border-bottom: 0; padding-bottom: 0; }
+        .permission-info h4 { margin: 0 0 4px; font-size: 15px; }
+        .permission-info p { margin: 0; color: var(--text-secondary); font-size: 13px; line-height: 1.45; }
+        .notice { margin-top: 14px; font-size: 14px; line-height: 1.45; }
+        @media (max-width: 520px) {
+            .verify-container { margin-top: 24px; }
+            .verify-header { align-items: flex-start; }
+            .code-entry { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <main class="verify-container">
+        <header class="verify-header">
+            <h2>Hesap Doğrulama ve İzinler</h2>
+            <a href="/app" class="back-link">← Panele dön</a>
+        </header>
+
+        <section class="verify-section" aria-labelledby="verify-heading">
+            <h3 id="verify-heading">A. E-posta doğrulama</h3>
+            <p style="color:var(--text-secondary);font-size:14px;line-height:1.5">
+                Hesap güvenliği ve haricî API özellikleri için adresinizi doğrulayın.
+            </p>
+            <div id="verify-status-area" aria-live="polite">
+                <div class="status-box"><p class="status-title">Durum kontrol ediliyor…</p></div>
+            </div>
+            <div id="code-panel" class="code-panel hidden">
+                <div style="font-size:13px;color:var(--text-secondary)">15 dakika geçerli yerel doğrulama kodun:</div>
+                <div id="demo-code" class="demo-code">------</div>
+                <div class="code-entry">
+                    <input id="verification-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 haneli kod" aria-label="Doğrulama kodu">
+                    <button id="verify-code-btn" class="btn btn-primary" type="button">Kodu doğrula</button>
+                </div>
+            </div>
+            <div id="verify-error" class="error-alert hidden notice" role="alert"></div>
+            <div id="verify-success" class="hidden notice" style="color:var(--success)" role="status"></div>
+        </section>
+
+        <section class="verify-section" aria-labelledby="permissions-heading">
+            <h3 id="permissions-heading">B. Uygulama izinleri</h3>
+            <p style="color:var(--text-secondary);font-size:14px;line-height:1.5">
+                Bu izinleri ihtiyacınıza göre açabilir veya kapatabilirsiniz.
+            </p>
+            <div id="permissions-list"><div style="color:var(--text-secondary);font-size:14px">İzinler yükleniyor…</div></div>
+        </section>
+    </main>
+
+    <script>
+        const PERMISSIONS = [
+            { id: 'external_api', title: 'Haricî model/API bağlantısı', desc: 'Bulut yapay zekâ sağlayıcılarını bağlamaya izin verir.' },
+            { id: 'send_data_out', title: 'Bağlı sağlayıcıya veri gönderme', desc: 'İstek içeriğini seçilen haricî modele göndermeye izin verir.' },
+            { id: 'file_access', title: 'Dosya erişimi', desc: 'Dosya yükleme ve belge analizi özelliklerini açar.' },
+            { id: 'usage_logging', title: 'Kullanım ve maliyet kaydı', desc: 'Token kullanımı ve maliyet istatistiklerini saklar.' }
+        ];
+
+        let currentStatus = null;
+
+        function getCookie(name) {
+            const match = document.cookie.split('; ').find(row => row.startsWith(`${name}=`));
+            return match ? decodeURIComponent(match.split('=').slice(1).join('=')) : '';
+        }
+
+        function showMessage(kind, message) {
+            const error = document.getElementById('verify-error');
+            const success = document.getElementById('verify-success');
+            error.classList.add('hidden');
+            success.classList.add('hidden');
+            if (!message) return;
+            const target = kind === 'error' ? error : success;
+            target.textContent = message;
+            target.classList.remove('hidden');
+        }
+
+        async function apiRequest(url, options = {}) {
+            const headers = { ...(options.headers || {}) };
+            if (options.method && options.method !== 'GET') {
+                headers['X-CSRF-Token'] = getCookie('csrf_token');
+            }
+            const response = await fetch(url, { ...options, headers });
+            let data = {};
+            try { data = await response.json(); } catch (_) {}
+            if (!response.ok) throw new Error(data.detail || 'İşlem tamamlanamadı.');
+            return data;
+        }
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/api/auth/verify-status');
+                if (response.status === 401 || response.status === 403) {
+                    window.location.href = '/login';
+                    return;
+                }
+                if (!response.ok) throw new Error('Doğrulama durumu alınamadı.');
+                currentStatus = await response.json();
+                renderStatus(currentStatus);
+            } catch (error) {
+                document.getElementById('verify-status-area').innerHTML = `<div class="status-box warning"><p class="status-title">Durum alınamadı</p><p class="status-copy"></p></div>`;
+                document.querySelector('#verify-status-area .status-copy').textContent = error.message;
+            }
+        }
+
+        function renderStatus(data) {
+            const area = document.getElementById('verify-status-area');
+            const codePanel = document.getElementById('code-panel');
+            if (data.verified) {
+                codePanel.classList.add('hidden');
+                area.innerHTML = `<div class="status-box success"><p class="status-title">✓ Hesabın doğrulandı</p><p class="status-copy" id="verified-email"></p></div>`;
+                document.getElementById('verified-email').textContent = data.email;
+                return;
+            }
+
+            if (data.smtp_configured) {
+                area.innerHTML = `
+                    <div class="status-box warning">
+                        <p class="status-title">E-posta adresin henüz doğrulanmadı</p>
+                        <p class="status-copy" id="pending-email"></p>
+                    </div>
+                    <div class="action-row"><button class="btn btn-primary" id="request-btn" type="button">Doğrulama e-postası gönder</button></div>`;
+            } else {
+                area.innerHTML = `
+                    <div class="status-box warning">
+                        <p class="status-title">Yerel Sunum Modu</p>
+                        <p class="status-copy">SMTP bilgisi olmadığı için gerçek e-posta gönderilmez. Aşağıdaki düğme, özelliği yerelde gösterebilmeniz için tek kullanımlık kod üretir. SMTP eklendiğinde aynı akış e-posta bağlantısı gönderir.</p>
+                    </div>
+                    <div class="action-row"><button class="btn btn-primary" id="request-btn" type="button">Yerel doğrulama kodu oluştur</button></div>`;
+            }
+            const emailLine = document.getElementById('pending-email');
+            if (emailLine) emailLine.textContent = `${data.email} adresine doğrulama bağlantısı gönderebilirsiniz.`;
+            document.getElementById('request-btn').addEventListener('click', requestVerification);
+        }
+
+        async function requestVerification() {
+            const button = document.getElementById('request-btn');
+            button.disabled = true;
+            button.textContent = 'Hazırlanıyor…';
+            showMessage('', '');
+            try {
+                const data = await apiRequest('/api/auth/request-verification', { method: 'POST' });
+                if (data.delivery === 'local') {
+                    document.getElementById('demo-code').textContent = data.local_code;
+                    document.getElementById('verification-code').value = data.local_code;
+                    document.getElementById('code-panel').classList.remove('hidden');
+                }
+                showMessage('success', data.message);
+            } catch (error) {
+                showMessage('error', error.message);
+            } finally {
+                button.disabled = false;
+                button.textContent = currentStatus && currentStatus.smtp_configured
+                    ? 'Doğrulama e-postasını yeniden gönder'
+                    : 'Yeni yerel kod oluştur';
+            }
+        }
+
+        async function verifyCode() {
+            const button = document.getElementById('verify-code-btn');
+            const code = document.getElementById('verification-code').value.trim();
+            button.disabled = true;
+            showMessage('', '');
+            try {
+                const data = await apiRequest('/api/auth/verify-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+                showMessage('success', data.message);
+                await loadStatus();
+            } catch (error) {
+                showMessage('error', error.message);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        async function loadConsents() {
+            try {
+                const data = await apiRequest('/api/auth/consents');
+                const granted = new Set((data.consents || []).filter(item => item.granted).map(item => item.permission_type));
+                const list = document.getElementById('permissions-list');
+                list.innerHTML = '';
+                PERMISSIONS.forEach(permission => {
+                    const item = document.createElement('div');
+                    item.className = 'permission-item';
+                    item.innerHTML = `
+                        <div class="permission-info"><h4></h4><p></p></div>
+                        <label class="switch">
+                            <input type="checkbox" ${granted.has(permission.id) ? 'checked' : ''}>
+                            <span class="slider round"></span>
+                        </label>`;
+                    item.querySelector('h4').textContent = permission.title;
+                    item.querySelector('p').textContent = permission.desc;
+                    const checkbox = item.querySelector('input');
+                    checkbox.addEventListener('change', () => toggleConsent(permission.id, checkbox));
+                    list.appendChild(item);
+                });
+            } catch (error) {
+                document.getElementById('permissions-list').textContent = `İzinler yüklenemedi: ${error.message}`;
+            }
+        }
+
+        async function toggleConsent(permissionType, checkbox) {
+            checkbox.disabled = true;
+            try {
+                await apiRequest('/api/auth/consents', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ permission_type: permissionType, granted: checkbox.checked })
+                });
+            } catch (error) {
+                checkbox.checked = !checkbox.checked;
+                showMessage('error', error.message);
+            } finally {
+                checkbox.disabled = false;
+            }
+        }
+
+        document.getElementById('verify-code-btn').addEventListener('click', verifyCode);
+        document.getElementById('verification-code').addEventListener('keydown', event => {
+            if (event.key === 'Enter') verifyCode();
+        });
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Promise.all([loadStatus(), loadConsents()]);
+        });
+    </script>
+</body>
+</html>

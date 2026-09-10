@@ -1,0 +1,27 @@
+# Python sanal ortamı
+.venv/
+
+# Python geçici dosyaları
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Gizli bilgiler ve ortam değişkenleri
+.env
+data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+.streamlit/secrets.toml
+
+# macOS sistem dosyası
+.DS_Store
+# Eklenenler
+.agents/
+recovery/
+scratch/
+*.zip
+*.log
