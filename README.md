@@ -54,6 +54,8 @@ py -3 -m venv .venv
 
 ## Beş dakikalık sunum akışı
 
+Hazır Türkçe uygulama demosu: [ContextLite 5 Dakikalık Tanıtım Videosu](./ContextLite_5_Dakika_Tanitim_FINAL.mp4)
+
 1. Ana ekranda gizlilik ve sıfır API maliyeti hedefini anlatın.
 2. Ayarlar'da **Foundry Local → Bağlantıyı Test Et** düğmesine basın. Bu test
    yalnızca model listesine bakmaz, gerçek bir inference çalıştırır.

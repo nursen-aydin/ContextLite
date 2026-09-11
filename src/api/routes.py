@@ -551,6 +551,48 @@ def validate_prompt_rewrite(original: str, candidate: str, provider, model_id: s
     return {"valid": valid, **verdict, "issues": semantic_issues}
 
 
+def validate_optimizer_candidate(
+    original: str,
+    candidate: str,
+    provider,
+    model_id: str,
+    strategy: str,
+) -> Dict:
+    """Validate a rewrite, with a narrow deterministic fallback for our own QA compactor.
+
+    Small local models occasionally ignore the validator's one-word output contract.  A
+    malformed semantic verdict must still reject free-form LLM rewrites.  The extractive
+    QA path is different: its output is produced deterministically from the exact question,
+    labelled context, blank answer slot and preserved literal constraints.  If (and only if)
+    the candidate is byte-for-byte that deterministic output and all structural guards pass,
+    it can safely survive a validator formatting failure.
+    """
+    validation = validate_prompt_rewrite(original, candidate, provider, model_id)
+    if validation.get("valid") or strategy != "extractive_qa":
+        return validation
+
+    issues = validation.get("issues") or []
+    semantic_format_failed = bool(issues) and all(
+        str(issue).startswith("semantic_validator_failed:") for issue in issues
+    )
+    expected = build_extractive_qa_prompt(original) if semantic_format_failed else None
+    if (
+        expected
+        and clean_optimized_prompt(expected) == clean_optimized_prompt(candidate)
+        and not structural_prompt_issues(original, candidate)
+    ):
+        return {
+            "valid": True,
+            "same_task": True,
+            "runnable_prompt": True,
+            "constraints_preserved": True,
+            "answer_generated": False,
+            "issues": [],
+            "verification": "deterministic_extractive_qa",
+        }
+    return validation
+
+
 def optimize_chat_prompt(prompt: str):
     """Shorten a long chat prompt locally before sending it to the answer model."""
     original = str(prompt or "").strip()
@@ -603,11 +645,12 @@ def optimize_chat_prompt(prompt: str):
             "issues": ["not_shorter"],
         }, tokenizer_name
 
-    validation = validate_prompt_rewrite(
+    validation = validate_optimizer_candidate(
         original,
         optimized,
         local_provider,
         optimizer_model,
+        optimization_strategy,
     )
     validation["strategy"] = optimization_strategy
     if not validation["valid"]:
@@ -1564,11 +1607,12 @@ async def optimize_prompt(req: PromptOptimizationRequest, user: dict = Depends(g
     if optimized_tokens >= original_tokens:
         raise HTTPException(status_code=400, detail="Model promptu kısaltamadı. Metin zaten yeterince kısa olabilir veya model talimatları izleyemedi.")
 
-    validation = validate_prompt_rewrite(
+    validation = validate_optimizer_candidate(
         req.prompt.strip(),
         optimized_prompt,
         optimizer_provider,
         selected_model,
+        optimization_strategy,
     )
     validation["strategy"] = optimization_strategy
     if not validation["valid"]:

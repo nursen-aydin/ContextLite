@@ -26,3 +26,6 @@ recovery/
 scratch/
 *.zip
 *.log
+
+# Yerel video taslağı (doğrulanmış FINAL sürümü depoda tutulur)
+/ContextLite_5_Dakika_Tanitim.mp4

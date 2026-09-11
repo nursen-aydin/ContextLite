@@ -679,6 +679,37 @@ def test_extractive_qa_optimizer_keeps_task_not_answer():
     assert structural_prompt_issues(original, optimized) == []
 
 
+def test_extractive_qa_uses_deterministic_fallback_when_validator_format_is_bad():
+    from src.api.routes import build_extractive_qa_prompt, validate_optimizer_candidate
+
+    original = (
+        'Answer from context and keep it short. Respond "Unsure about answer" if unsure.\n'
+        'Context: Teplizumab has a long development history. Scientists generated an early '
+        'antibody dubbed OKT3. Originally sourced from mice, it bound to T cells. In 1986 it '
+        'was approved to prevent kidney transplant rejection.\n'
+        'Question: What was OKT3 originally sourced from?\n'
+        'Answer:'
+    )
+    candidate = build_extractive_qa_prompt(original)
+
+    class BadlyFormattedValidator:
+        def generate_chat(self, *args, **kwargs):
+            return "The candidate appears valid, but here is extra commentary."
+
+    result = validate_optimizer_candidate(
+        original,
+        candidate,
+        BadlyFormattedValidator(),
+        "qwen2.5-1.5b",
+        "extractive_qa",
+    )
+
+    assert result["valid"] is True
+    assert result["runnable_prompt"] is True
+    assert result["answer_generated"] is False
+    assert result["verification"] == "deterministic_extractive_qa"
+
+
 @patch("src.api.routes.FoundryProvider.count_tokens", side_effect=[61, 9])
 @patch("src.api.routes.FoundryProvider.generate_chat")
 @patch("src.api.routes.build_extractive_qa_prompt", return_value=None)
