@@ -25,7 +25,6 @@ password_hash = PasswordHash.recommended()
 
 router = APIRouter()
 
-# Dependency to get current user from session cookie
 def get_current_user(request: Request):
     session_token = request.cookies.get("session_id")
     if not session_token:
@@ -188,21 +187,18 @@ async def login(req: LoginRequest, request: Request, response: Response):
     rate_key = f"{client_ip}_{email}"
     now = datetime.now()
     
-    # Check rate limit
     attempt_info = login_attempts.get(rate_key, {"count": 0, "locked_until": None})
     if attempt_info["locked_until"]:
         if now < attempt_info["locked_until"]:
             remaining = int((attempt_info["locked_until"] - now).total_seconds())
             raise HTTPException(status_code=429, detail=f"Çok fazla hatalı deneme. Lütfen {remaining} saniye sonra tekrar deneyin.")
         else:
-            # Lock expired, reset
             attempt_info = {"count": 0, "locked_until": None}
         
     user = get_user_by_email(email)
     
     # Avoid timing attacks
     if not user or not password_hash.verify(req.password, user["password_hash"]):
-        # Increment attempt
         attempt_info["count"] += 1
         if attempt_info["count"] >= 5:
             attempt_info["locked_until"] = now + timedelta(minutes=5)
@@ -210,7 +206,6 @@ async def login(req: LoginRequest, request: Request, response: Response):
         
         raise HTTPException(status_code=401, detail="E-posta veya parola hatalı.")
         
-    # Reset attempts on success
     if rate_key in login_attempts:
         del login_attempts[rate_key]
         
@@ -219,7 +214,6 @@ async def login(req: LoginRequest, request: Request, response: Response):
         
     update_last_login(user["id"])
     
-    # Create secure session
     session_token = secrets.token_urlsafe(32)
     csrf_token = secrets.token_urlsafe(32)
     token_hash = hashlib.sha256(session_token.encode()).hexdigest()
@@ -235,7 +229,6 @@ async def login(req: LoginRequest, request: Request, response: Response):
     
     is_secure = request.url.scheme == "https"
     
-    # Set HttpOnly Cookie for session
     response.set_cookie(
         key="session_id",
         value=session_token,
@@ -321,9 +314,7 @@ async def forgot_password(req: ForgotPasswordRequest):
     email = req.email.strip().lower()
     user = get_user_by_email(email)
     
-    # Check if SMTP is configured before attempting
     if not is_smtp_configured():
-        # User requested: E-posta servisi hiç yapılandırılmamışsa "Parola sıfırlama hizmeti şu anda kullanılamıyor." mesajı gösterilsin.
         raise HTTPException(status_code=503, detail="Parola sıfırlama hizmeti şu anda kullanılamıyor.")
     
     msg = "Bu e-posta adresiyle kayıtlı bir hesap varsa parola sıfırlama bağlantısı birkaç dakika içinde gönderilecektir."
@@ -376,7 +367,6 @@ async def resend_verification(req: ResendVerificationRequest, request: Request):
     rate_key = f"{client_ip}_{email}_resend"
     now = datetime.now()
     
-    # Check rate limit (60 seconds)
     last_attempt = resend_attempts.get(rate_key)
     if last_attempt:
         diff = (now - last_attempt).total_seconds()

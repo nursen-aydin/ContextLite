@@ -18,15 +18,12 @@ from src.config import settings
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_teardown_db(tmp_path):
-    # Override settings.db_path dynamically for each test
     new_db_path = str(tmp_path / "test.db")
     settings.db_path = new_db_path
     
-    # Initialize DB (migrations will run on this new file)
     init_db()
     
     yield
-    # Pytest will clean up tmp_path automatically
 
 def pytest_sessionfinish(session, exitstatus):
     os.close(dummy_fd)

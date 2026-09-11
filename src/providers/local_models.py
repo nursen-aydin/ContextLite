@@ -24,7 +24,6 @@ class LocalModelProvider(BaseProvider):
         raise NotImplementedError
 
 
-# --- Foundry Local ---
 try:
     from foundry_local_sdk import FoundryLocalManager, Configuration
 except ImportError:
@@ -436,7 +435,6 @@ class FoundryProvider(LocalModelProvider):
             return embeddings, resolved_id
 
 
-# --- LM Studio ---
 class LMStudioProvider(LocalModelProvider):
     def __init__(self, base_url: str = "http://127.0.0.1:1234/v1"):
         self.base_url = base_url
@@ -489,7 +487,6 @@ class LMStudioProvider(LocalModelProvider):
             raise Exception(f"LM Studio API Hatası: {str(e)}")
 
 
-# --- Ollama ---
 class OllamaProvider(LocalModelProvider):
     def __init__(self, base_url: str = "http://127.0.0.1:11434/api"):
         self.base_url = base_url

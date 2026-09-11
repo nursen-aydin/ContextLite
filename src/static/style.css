@@ -1,7 +1,4 @@
-/* ==========================================================================
-   CSS VARIABLES & DESIGN SYSTEM
-   ========================================================================== */
-   :root {
+:root {
     /* Colors - Light Theme */
     --bg-page: #f9fafb;
     --bg-surface: #ffffff;
@@ -91,9 +88,6 @@
     --warning-bg: #fef3c7;
 }
 
-/* ==========================================================================
-   RESET & BASE
-   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
@@ -123,9 +117,6 @@ body {
     display: flex;
 }
 
-/* ==========================================================================
-   BUTTONS & INPUTS
-   ========================================================================== */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -200,13 +191,13 @@ body {
 .form-stack {
     display: flex;
     flex-direction: column;
-    gap: 18px; /* Form fields gap */
+    gap: 18px;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Label to input gap */
+    gap: 8px;
     text-align: left;
 }
 
@@ -285,9 +276,6 @@ body {
     color: var(--text-secondary);
 }
 
-/* ==========================================================================
-   AUTH SCREENS
-   ========================================================================== */
 .auth-layout {
     position: fixed;
     inset: 0;
@@ -360,9 +348,6 @@ body {
     margin-bottom: 28px;
 }
 
-/* ==========================================================================
-   APP LAYOUT
-   ========================================================================== */
 .app-layout {
     display: flex;
     height: 100vh;
@@ -1201,9 +1186,6 @@ body.sidebar-is-resizing * {
     gap: 12px;
 }
 
-/* ==========================================================================
-   MOBILE RESPONSIVENESS
-   ========================================================================== */
 @media (max-width: 768px) {
     .sidebar {
         position: fixed;
@@ -1431,11 +1413,6 @@ input:checked + .slider:before {
     100% { transform: rotate(360deg); }
 }
 
-/* ==========================================================================
-   BACKGROUND IMAGES & THEMES
-   ========================================================================== */
-
-/* Base style for pseudo element backgrounds */
 .bg-image-wrapper {
     position: relative;
     z-index: 1;
@@ -1449,7 +1426,6 @@ input:checked + .slider:before {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    /* Apply a slight blur and desaturation directly to the background image */
     filter: blur(4px) grayscale(20%);
     /* Tül perde etkisi (semi-transparent white overlay) */
     opacity: 0.25; 
@@ -1461,7 +1437,6 @@ input:checked + .slider:before {
     z-index: 2;
 }
 
-/* Specific backgrounds */
 .bg-hero::before {
     background-image: url('/static/img/ai_background.jpg');
 }
@@ -1486,9 +1461,6 @@ input:checked + .slider:before {
     filter: blur(4px) grayscale(50%) brightness(0.5);
 }
 
-/* ==========================================================================
-   DARK THEME VARIABLES
-   ========================================================================== */
 [data-theme="dark"] {
     --bg-page: #111827;
     --bg-surface: #1f2937;

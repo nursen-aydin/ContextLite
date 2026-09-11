@@ -1,6 +1,3 @@
-// ============================================================================
-// THEME LOGIC (EARLY EXECUTION)
-// ============================================================================
 function applyTheme(theme) {
     if (theme === 'system') {
         const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -12,18 +9,12 @@ function applyTheme(theme) {
 const savedTheme = localStorage.getItem('theme') || 'system';
 applyTheme(savedTheme);
 
-// Watch for system theme changes
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     if (localStorage.getItem('theme') === 'system') {
         applyTheme('system');
     }
 });
 
-// ============================================================================
-// DOM ELEMENTS
-// ============================================================================
-
-// Navigation & Views
 const navDashboard = document.getElementById('nav-dashboard');
 const navChat = document.getElementById('nav-chat');
 const navModels = document.getElementById('nav-models');
@@ -49,7 +40,6 @@ const setupView = document.getElementById('setup-view');
 const loginView = document.getElementById('login-view');
 const appContainer = document.getElementById('app-container');
 
-// Sidebar (Mobile)
 const appSidebar = document.getElementById('app-sidebar');
 const sidebarBackdrop = document.getElementById('sidebar-backdrop');
 const sidebarCloseBtn = document.getElementById('sidebar-close');
@@ -216,7 +206,6 @@ if (themeMenuButton && themeMenu) {
     });
 }
 
-// Modals
 const confirmModal = document.getElementById('confirm-modal');
 const modalTitle = document.getElementById('modal-title');
 const modalDesc = document.getElementById('modal-desc');
@@ -224,7 +213,6 @@ const modalConfirm = document.getElementById('modal-confirm');
 const modalCancel = document.getElementById('modal-cancel');
 let pendingConfirmAction = null;
 
-// Chat
 const chatForm = document.getElementById('chat-form');
 const chatInput = document.getElementById('chat-input');
 const chatMessages = document.getElementById('chat-messages');
@@ -233,16 +221,11 @@ const modelSelect = document.getElementById('model-select');
 const sendButton = document.getElementById('send-button');
 const chatProjectSelect = document.getElementById('chat-project-select');
 
-// State
 let currentConversationId = null;
 let currentProjectId = null;
 let currentMessages = [];
 let csrfToken = "";
 let modelManagerTimer = null;
-
-// ============================================================================
-// UTILS & API
-// ============================================================================
 
 function getCookie(name) {
     let value = "; " + document.cookie;
@@ -274,11 +257,9 @@ async function checkAuth() {
             document.getElementById('user-name').textContent = user.name;
             document.getElementById('user-role').textContent = user.role === 'owner' ? 'Sahip' : 'Kullanıcı';
             
-            // Set initials
             const initials = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
             document.getElementById('user-avatar-initials').textContent = initials;
             
-            // Populate Dashboard info
             document.getElementById('dash-user-name').textContent = user.name.split(' ')[0];
             const emailParts = user.email.split('@');
             let maskedEmail = user.email;
@@ -319,18 +300,10 @@ async function checkAuth() {
     return false;
 }
 
-// Auth forms have been moved to their respective html pages.
-
 document.getElementById('logout-btn').addEventListener('click', async () => {
     await apiFetch('/api/auth/logout', { method: 'POST' });
     window.location.reload();
 });
-
-// Toggle logic moved to auth pages.
-
-// ============================================================================
-// NAVIGATION & SIDEBAR
-// ============================================================================
 
 function switchView(view) {
     if(navDashboard) navDashboard.classList.remove('active');
@@ -421,7 +394,6 @@ sidebarOpeners.forEach(btn => btn.addEventListener('click', openSidebar));
 sidebarCloseBtn.addEventListener('click', closeSidebar);
 sidebarBackdrop.addEventListener('click', closeSidebar);
 
-// Modal logic
 function showConfirmModal(title, desc, onConfirm) {
     modalTitle.textContent = title;
     modalDesc.textContent = desc;
@@ -434,10 +406,6 @@ modalConfirm.addEventListener('click', async () => {
     confirmModal.classList.add('hidden');
     pendingConfirmAction = null;
 });
-
-// ============================================================================
-// CONVERSATIONS
-// ============================================================================
 
 document.getElementById('new-chat-btn').addEventListener('click', () => {
     currentConversationId = null;
@@ -519,7 +487,6 @@ async function loadConversation(id) {
         
         chatMessages.innerHTML = '';
         
-        // Find title and info
         const convList = await apiFetch('/api/conversations').then(r => r.json());
         const conv = convList.find(c => c.id === id);
         document.getElementById('chat-title').textContent = conv ? conv.title : 'Sohbet';
@@ -531,7 +498,6 @@ async function loadConversation(id) {
             currentProjectId = info.project_id || null;
             if (chatProjectSelect) chatProjectSelect.value = currentProjectId || '';
             
-            // Set correct mode if saved in DB (if applicable)
             if (info.selected_mode) {
                 modeSelect.value = info.selected_mode;
             }
@@ -557,10 +523,6 @@ async function loadConversation(id) {
         switchView('chat');
     }
 }
-
-// ============================================================================
-// CHAT INTERACTION
-// ============================================================================
 
 modeSelect.addEventListener('change', async () => {
     modelSelect.classList.remove('hidden');
@@ -605,7 +567,6 @@ modelSelect.addEventListener('change', () => {
     localStorage.setItem(`saved_model_${modeSelect.value}`, modelSelect.value);
 });
 
-// Trigger change on load
 window.addEventListener('DOMContentLoaded', () => {
     const savedProvider = localStorage.getItem('saved_provider');
     if (savedProvider) modeSelect.value = savedProvider;
@@ -923,10 +884,6 @@ chatForm.addEventListener('submit', async (e) => {
     }
 });
 
-// ============================================================================
-// SETTINGS: PROVIDERS & BUDGET
-// ============================================================================
-
 async function loadProviders() {
     const res = await apiFetch('/api/providers');
     if (!res.ok) return;
@@ -1082,10 +1039,6 @@ window.saveBudget = async () => {
     if(res.ok) alert("Bütçe ayarları başarıyla kaydedildi.");
 };
 
-// ============================================================================
-// USAGE STATS
-// ============================================================================
-
 async function loadUsage() {
     const [sumRes, histRes] = await Promise.all([
         apiFetch('/api/usage/summary'),
@@ -1103,7 +1056,6 @@ async function loadUsage() {
         document.getElementById('stat-prevented-tokens').textContent = sum.prevented_tokens || 0;
         document.getElementById('stat-avg-time').textContent = `${Math.round(sum.avg_response_time)} ms`;
         
-        // Update Dashboard Summary
         const dashReqs = document.getElementById('dash-stat-reqs');
         const dashCost = document.getElementById('dash-stat-cost');
         if (dashReqs) dashReqs.textContent = sum.month_requests;
@@ -1133,10 +1085,6 @@ async function loadUsage() {
         });
     }
 }
-
-// ============================================================================
-// PROJECTS
-// ============================================================================
 
 async function loadProjects() {
     const res = await apiFetch('/api/projects');
@@ -1184,7 +1132,6 @@ async function loadProjects() {
             }
         });
         
-        // Update files project select dropdown
         const filesSelect = document.getElementById('files-project-select');
         if (filesSelect) {
             const currentVal = filesSelect.value;
@@ -1281,7 +1228,6 @@ window.saveProject = async () => {
             projectId = data.project_id;
         }
         
-        // Handle file uploads
         const fileInput = document.getElementById('project-files-input');
         if (fileInput && fileInput.files.length > 0 && projectId) {
             const formData = new FormData();
@@ -1305,7 +1251,6 @@ window.saveProject = async () => {
         
         closeProjectModal();
         loadProjects();
-        // Clear files input
         if (fileInput) fileInput.value = '';
     } else {
         const data = await res.json();
@@ -1324,10 +1269,6 @@ window.deleteProject = (id) => {
         }
     });
 };
-
-// ============================================================================
-// FOUNDRY MODEL MANAGER
-// ============================================================================
 
 function formatModelSize(sizeMb) {
     const value = Number(sizeMb || 0);
@@ -1528,14 +1469,8 @@ async function loadModelManager() {
 const modelsRefreshBtn = document.getElementById('models-refresh-btn');
 if (modelsRefreshBtn) modelsRefreshBtn.addEventListener('click', loadModelManager);
 
-// ============================================================================
-// INITIALIZATION
-// ============================================================================
 checkAuth();
 
-// ============================================================================
-// TOKEN SAVER LOGIC
-// ============================================================================
 const tsInput = document.getElementById('ts-input-prompt');
 const tsOutput = document.getElementById('ts-output-prompt');
 const tsOrigTokens = document.getElementById('ts-original-tokens');
@@ -1570,7 +1505,6 @@ async function loadTSModels() {
         }
     } catch(e) {}
 }
-// Load when viewing token saver
 if (navTokenSaver) {
     navTokenSaver.addEventListener('click', () => {
         loadTSModels();
@@ -1837,7 +1771,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Provider Test logic
 document.addEventListener('DOMContentLoaded', () => {
     const testBtn = document.getElementById('test-provider-btn');
     if (testBtn) {
@@ -1904,10 +1837,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-
-// ============================================================================
-// SETTINGS & SANDBOX LOGIC
-// ============================================================================
 
 window.testLocalProvider = async (provider) => {
     const badge = document.getElementById(`settings-${provider}-badge`);
@@ -2012,7 +1941,6 @@ window.runSandboxTest = async () => {
         } else {
             resultDiv.innerHTML = `<span style="color:var(--success);">Bağlantı Başarılı. Yanıt alınıyor...</span>`;
             // Real stream logic is omitted for brief sandbox test, we just confirm it connected successfully
-            // (Normally you'd read the reader here)
         }
     } catch(e) {
         resultDiv.innerHTML = `<span style="color:var(--error);">Bağlantı Hatası: ${e.message}</span>`;
@@ -2021,7 +1949,6 @@ window.runSandboxTest = async () => {
     btn.disabled = false;
 };
 
-// Initial load for settings
 document.addEventListener('DOMContentLoaded', () => {
     const themeSelectSettings = document.getElementById('settings-theme-select');
     if(themeSelectSettings) {

@@ -15,22 +15,18 @@ def sse_payloads(response):
             payloads.append(json.loads(line[6:]))
     return payloads
 
-# Note: DB initialization and test isolation is now handled entirely in conftest.py
 
 @pytest.fixture(scope="function", autouse=True)
 def setup_and_login():
-    # 1. Reset client state
     client.cookies.clear()
     client.headers.clear()
 
-    # 2. Setup first time (Database is already brand new per-test via conftest)
     setup_res = client.post("/api/auth/setup", json={
         "name": "Admin",
         "email": "admin@example.com",
         "password": "Password123!"
     })
     
-    # 3. Login as admin to get cookies
     login_res = client.post("/api/auth/login", json={
         "email": "admin@example.com",
         "password": "Password123!"
@@ -39,12 +35,8 @@ def setup_and_login():
     client.cookies.update(login_res.cookies)
     client.headers.update({"X-CSRF-Token": login_res.cookies.get("csrf_token")})
     yield
-    # Post-test cleanup can happen here if needed
-
-# --- Auth & Security Tests ---
 
 def test_setup_only_once():
-    # Setup was already done in fixture
     res = client.post("/api/auth/setup", json={
         "name": "Hacker",
         "email": "hacker@example.com",
@@ -60,7 +52,6 @@ def test_password_validation():
     conn.commit()
     conn.close()
     
-    # Attempt setup with weak password
     res = client.post("/api/auth/setup", json={
         "name": "Admin",
         "email": "admin@example.com",
@@ -70,7 +61,6 @@ def test_password_validation():
     assert "8" in res.json()["detail"]
 
 def test_login_invalid_credentials_does_not_leak_existence():
-    # Clear client cookies
     unauth_client = TestClient(app)
     res = unauth_client.post("/api/auth/login", json={
         "email": "notexist@example.com",
@@ -80,7 +70,6 @@ def test_login_invalid_credentials_does_not_leak_existence():
     assert "E-posta veya parola hatalı" in res.json()["detail"]
 
 def test_csrf_protection_for_post():
-    # Make a post without CSRF header
     client.headers = {}
     res = client.post("/api/budget", json={"daily_limit": 10.0, "monthly_limit": 100.0})
     assert res.status_code == 403
@@ -95,20 +84,16 @@ def test_logout_invalidates_session():
     res = client.post("/api/auth/logout")
     assert res.status_code == 200
     
-    # Try accessing protected route
     res2 = client.get("/api/providers")
     assert res2.status_code == 401
 
 def test_data_isolation():
     # Create second user directly via DB since setup is disabled
-    from src.services.db import create_user
+    from src.services.db import create_user, set_budget_settings
     user2_id = create_user("User2", "user2@example.com", "hash", "user")
     
-    # Give user 2 a budget
-    from src.services.db import set_budget_settings
     set_budget_settings(user2_id, 99.0, 99.0)
     
-    # Admin checks their budget, should be None
     res = client.get("/api/budget")
     assert res.json()["daily_limit"] is None
 
@@ -116,11 +101,8 @@ def test_data_isolation():
 def test_conversation_history(mock_local):
     mock_local.return_value = [{"content": "Yanit"}, {"is_metadata": True, "provider": "Foundry Local", "model": "qwen3-4b"}]
     
-    # Send a msg
     res = client.post("/api/chat/stream", json={"messages": [{"role": "user", "content": "hi"}], "mode": "Sadece Yerel"})
-    list(res.iter_lines()) # Exhaust generator to release DB locks\n    assert res.status_code == 200
-    
-    # Wait to make sure log/db writes complete
+    list(res.iter_lines())  # Exhaust generator to release DB locks
     
     res_convs = client.get("/api/conversations")
     convs = res_convs.json()
@@ -129,9 +111,7 @@ def test_conversation_history(mock_local):
     
     res_msgs = client.get(f"/api/conversations/{conv_id}")
     msgs = res_msgs.json()
-    assert len(msgs) >= 2 # user and assistant
-
-# --- Old Tests Adapted ---
+    assert len(msgs) >= 2
 
 def test_health_check():
     res = client.get("/api/health")
@@ -411,26 +391,21 @@ def test_cloud_provider_status_and_allowlist():
     assert unsupported.status_code == 400
 
 def test_save_and_delete_key():
-    # Save
     res1 = client.post("/api/providers/openai", json={"api_key": "sk-123"})
     assert res1.status_code == 200
     
-    # Verify it has key
     res2 = client.get("/api/providers")
     p = next((x for x in res2.json() if x["id"] == "openai"), None)
     assert p["has_key"] is True
     
-    # Delete
     res3 = client.delete("/api/providers/openai")
     assert res3.status_code == 200
     
-    # Verify deleted
     res4 = client.get("/api/providers")
     p = next((x for x in res4.json() if x["id"] == "openai"), None)
     assert p["has_key"] is False
 
 def test_test_connection_invalid_key():
-    # Test directly with bad key in body
     res = client.post("/api/providers/openai/test", json={"api_key": "bad_key"})
     assert res.status_code == 400
 
@@ -439,7 +414,7 @@ def test_local_model_routing_smoke_test(mock_generate):
     mock_generate.return_value = [{"content": "Foundry Local"}, {"is_metadata": True, "provider": "Foundry Local", "model": "qwen3-4b"}]
     
     res = client.post("/api/chat/stream", json={"messages": [{"role": "user", "content": "selam"}], "mode": "Sadece Yerel"})
-    list(res.iter_lines()) # Exhaust generator to release DB locks\n    assert res.status_code == 200
+    list(res.iter_lines())  # Exhaust generator to release DB locks
     
     found = False
     for line in res.iter_lines():
@@ -771,11 +746,9 @@ def test_prompt_optimizer_preserves_qa_task_and_uses_same_tokenizer(mock_generat
 
 def test_login_rate_limit():
     unauth = TestClient(app)
-    # Fail 5 times
     for _ in range(5):
         unauth.post("/api/auth/login", json={"email": "admin@example.com", "password": "wrong"})
     
-    # 6th should be 429
     res = unauth.post("/api/auth/login", json={"email": "admin@example.com", "password": "wrong"})
     assert res.status_code == 429
     assert "Çok fazla" in res.json()["detail"]
@@ -794,7 +767,7 @@ def test_secure_cookies():
 def test_save_history_off(mock_generate):
     mock_generate.return_value = [{"content": "Yanit"}]
     res = client.post("/api/chat/stream", json={"messages": [{"role": "user", "content": "hi"}], "mode": "Sadece Yerel", "save_history": False})
-    list(res.iter_lines()) # Exhaust generator to release DB locks\n    
+    list(res.iter_lines())  # Exhaust generator to release DB locks
     assert res.status_code == 200
     found_conv = False
     for line in res.iter_lines():
@@ -807,9 +780,9 @@ def test_idempotency_request_id(mock_generate):
     mock_generate.return_value = [{"content": "Yanit"}]
     req_id = "test_req_123"
     res1 = client.post("/api/chat/stream", json={"messages": [{"role": "user", "content": "hi"}], "mode": "Sadece Yerel", "request_id": req_id})
-    list(res1.iter_lines()) # Exhaust generator to release DB locks\n    _ = res1.text # Exhaust generator
+    list(res1.iter_lines())  # Exhaust generator to release DB locks
     res2 = client.post("/api/chat/stream", json={"messages": [{"role": "user", "content": "hi"}], "mode": "Sadece Yerel", "request_id": req_id})
-    list(res2.iter_lines()) # Exhaust generator to release DB locks\n    
+    list(res2.iter_lines())  # Exhaust generator to release DB locks 
     found_error = False
     for line in res2.iter_lines():
         if line.startswith("data: ") and line != "data: [DONE]":
@@ -842,17 +815,14 @@ def test_local_request_has_zero_cost_and_never_calls_cloud(mock_litellm_completi
 def test_old_data_adopted_by_first_owner():
     from src.services.db import get_connection, create_user
     
-    # Insert orphaned record
     conn = get_connection()
     c = conn.cursor()
     c.execute("INSERT INTO usage_logs (provider, model, user_id) VALUES ('Test', 'test', NULL)")
     conn.commit()
     conn.close()
     
-    # create owner
     uid = create_user("Owner2", "owner2@example.com", "hash", "owner")
     
-    # check adoption
     conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT user_id FROM usage_logs WHERE provider='Test'")

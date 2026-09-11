@@ -11,7 +11,6 @@ def run_migrations():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    # Check current schema version
     cursor.execute("CREATE TABLE IF NOT EXISTS schema_versions (version INTEGER PRIMARY KEY)")
     cursor.execute("SELECT MAX(version) FROM schema_versions")
     row = cursor.fetchone()
@@ -19,7 +18,6 @@ def run_migrations():
 
     if current_version < 1:
         print("Starting migration to version 1...")
-        # 1. Backup DB (if it existed before this run)
         if db_exists:
             backup_path = f"{db_path}.v0_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
             shutil.copy2(db_path, backup_path)
@@ -30,7 +28,6 @@ def run_migrations():
         try:
             conn.execute("BEGIN TRANSACTION")
 
-            # Create Users Table
             cursor.execute('''
                 CREATE TABLE users (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -44,7 +41,6 @@ def run_migrations():
                 )
             ''')
 
-            # Create Sessions Table
             cursor.execute('''
                 CREATE TABLE sessions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,7 +53,6 @@ def run_migrations():
                 )
             ''')
 
-            # Create Conversations Table
             cursor.execute('''
                 CREATE TABLE conversations (
                     id TEXT PRIMARY KEY,
@@ -72,7 +67,6 @@ def run_migrations():
                 )
             ''')
 
-            # Create Messages Table
             cursor.execute('''
                 CREATE TABLE messages (
                     id TEXT PRIMARY KEY,
@@ -88,7 +82,6 @@ def run_migrations():
                 )
             ''')
 
-            # Alter existing tables to add user_id
             try:
                 cursor.execute("ALTER TABLE provider_settings ADD COLUMN user_id INTEGER REFERENCES users(id)")
             except sqlite3.OperationalError:
@@ -99,7 +92,6 @@ def run_migrations():
             except sqlite3.OperationalError:
                 pass
 
-            # Handle user_preferences mapping
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user_preferences'")
             if cursor.fetchone():
                 cursor.execute("CREATE TABLE user_preferences_new (user_id INTEGER, key TEXT, value TEXT, PRIMARY KEY (user_id, key))")
@@ -109,7 +101,6 @@ def run_migrations():
             else:
                 cursor.execute("CREATE TABLE user_preferences (user_id INTEGER, key TEXT, value TEXT, PRIMARY KEY (user_id, key))")
 
-            # Update schema version
             cursor.execute("INSERT INTO schema_versions (version) VALUES (1)")
             
             conn.commit()
@@ -124,7 +115,6 @@ def run_migrations():
         try:
             conn.execute("BEGIN TRANSACTION")
             
-            # Add new columns to conversations
             try:
                 cursor.execute("ALTER TABLE conversations ADD COLUMN project_summary TEXT")
             except sqlite3.OperationalError:
@@ -135,7 +125,6 @@ def run_migrations():
             except sqlite3.OperationalError:
                 pass
                 
-            # Add new columns to usage_logs
             try:
                 cursor.execute("ALTER TABLE usage_logs ADD COLUMN prevented_tokens INTEGER")
             except sqlite3.OperationalError:
@@ -160,7 +149,6 @@ def run_migrations():
         try:
             conn.execute("BEGIN TRANSACTION")
             
-            # Create Projects Table
             cursor.execute('''
                 CREATE TABLE projects (
                     id TEXT PRIMARY KEY,
@@ -173,13 +161,11 @@ def run_migrations():
                 )
             ''')
             
-            # Alter users for email verification
             try:
                 cursor.execute("ALTER TABLE users ADD COLUMN email_verified_at DATETIME")
             except sqlite3.OperationalError:
                 pass
                 
-            # Email Verification Tokens
             cursor.execute('''
                 CREATE TABLE email_verification_tokens (
                     token_hash TEXT PRIMARY KEY,
@@ -189,7 +175,6 @@ def run_migrations():
                 )
             ''')
             
-            # Password Reset Tokens
             cursor.execute('''
                 CREATE TABLE password_reset_tokens (
                     token_hash TEXT PRIMARY KEY,
@@ -199,7 +184,6 @@ def run_migrations():
                 )
             ''')
             
-            # Alter conversations for project_id
             try:
                 cursor.execute("ALTER TABLE conversations ADD COLUMN project_id TEXT REFERENCES projects(id) ON DELETE CASCADE")
             except sqlite3.OperationalError:

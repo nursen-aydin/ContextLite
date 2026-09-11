@@ -68,7 +68,6 @@ class LiteLLMRouter:
             })
             return [{"model": custom_model, "is_free": cat["is_free"], "reason": "Kullanıcı tarafından manuel olarak seçildi."}]
 
-        # Filter available models
         available_models = []
         for model_id, info in MODEL_CATALOG.items():
             if self.is_provider_configured(user_id, info["provider"]):
@@ -99,7 +98,6 @@ class LiteLLMRouter:
             return plan
 
         if mode == "En İyi Yanıt" or mode == "En İyi Cevap":
-            # Smartest first
             smart_models = [m for m in available_models if "smart" in m.get("tags", [])]
             smart_models.sort(key=lambda x: (x["is_free"], -x["input_cost_per_m"]), reverse=True)
             # If no smart models, fallback to fast

@@ -1,5 +1,3 @@
-# src/providers/models.py
-
 from typing import Dict, Any
 
 MODEL_CATALOG: Dict[str, Dict[str, Any]] = {

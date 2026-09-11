@@ -56,6 +56,5 @@ async def serve_app():
 async def verify_account_page():
     return FileResponse("src/static/verify.html")
 
-# Mount static files (js, css, images)
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")

@@ -26,7 +26,6 @@ def init_db():
     if not row or row[0] is None:
         cursor.execute("INSERT INTO schema_versions (version) VALUES (1)")
     
-    # Sağlayıcı ayarları
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS provider_settings (
             provider_name TEXT,
@@ -38,7 +37,6 @@ def init_db():
         )
     ''')
     
-    # Kullanıcı tercihleri
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_preferences (
             user_id INTEGER REFERENCES users(id),
@@ -48,7 +46,6 @@ def init_db():
         )
     ''')
     
-    # Kullanım logları
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS usage_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -365,7 +362,6 @@ def get_conversation_messages(conversation_id: str, user_id: int) -> list:
     conn.row_factory = dict_factory
     cursor = conn.cursor()
     
-    # Verify ownership
     cursor.execute("SELECT id, project_summary, token_saver_enabled FROM conversations WHERE id = ? AND user_id = ?", (conversation_id, user_id))
     conv = cursor.fetchone()
     if not conv:
@@ -408,8 +404,6 @@ def dict_factory(cursor, row):
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
-
-# --- Tokens & Verification ---
 
 def save_email_verification_token(token_hash: str, user_id: int, expires_at: str):
     conn = get_connection()
@@ -477,8 +471,6 @@ def update_user_password(user_id: int, new_password_hash: str):
     cursor.execute("DELETE FROM sessions WHERE user_id = ?", (user_id,))
     conn.commit()
     conn.close()
-
-# --- Projects ---
 
 def create_project(project_id: str, user_id: int, name: str, description: str = ""):
     conn = get_connection()
@@ -595,7 +587,6 @@ def search_chunks(user_id: int, project_id: str, query: str, limit: int = 5) -> 
     conn = get_connection()
     conn.row_factory = dict_factory
     cursor = conn.cursor()
-    # Perform FTS5 search
     # We join with document_chunks to ensure it belongs to user_id and project_id
     sql = """
         SELECT c.*, f.filename 

@@ -862,7 +862,6 @@ async def chat_stream(request: ChatRequest, background_tasks: BackgroundTasks, u
                     content=str(request.messages[-1]["content"]).strip(),
                 )
             
-        # RAG Entegrasyonu (Eğer bir proje seçiliyse belgelerde ara)
         context_text = ""
         used_sources = []
         retrieval_method = None
@@ -1201,7 +1200,6 @@ async def chat_stream(request: ChatRequest, background_tasks: BackgroundTasks, u
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-# --- Conversation Endpoints ---
 @router.get("/conversations")
 async def list_conversations(user: dict = Depends(get_current_user)):
     return get_conversations(user["id"])
@@ -1212,9 +1210,6 @@ async def get_conversation(conv_id: str, user: dict = Depends(get_current_user))
     if msgs is None:
         raise HTTPException(status_code=404, detail="Konuşma bulunamadı.")
     info = get_conversation_info(conv_id, user["id"])
-    # We still return array of messages to not break UI, 
-    # but we can return token_saver state separately via headers or let frontend just fetch info if needed.
-    # Actually, we can return a wrapped object if we change the frontend. Let's just return messages to not break existing frontend parse.
     return msgs
     
 @router.get("/conversations/{conv_id}/info")
@@ -1229,8 +1224,6 @@ async def delete_conv(conv_id: str, user: dict = Depends(get_current_user)):
     if delete_conversation(conv_id, user["id"]):
         return {"status": "success"}
     raise HTTPException(status_code=404, detail="Konuşma bulunamadı.")
-
-# --- Projects Endpoints ---
 
 class ProjectRequest(BaseModel):
     name: str
@@ -1354,7 +1347,6 @@ async def upload_file(project_id: str, files: List[UploadFile] = File(...), user
         
     return {"status": "success", "files": uploaded_files}
 
-# --- Settings & Provider Endpoints ---
 class ProviderKeyRequest(BaseModel):
     api_key: str
 

@@ -155,12 +155,10 @@
     </div>
 
     <script>
-        // Check if already logged in
         fetch('/api/auth/me').then(res => {
             if (res.ok) window.location.href = '/app';
         }).catch(() => {});
 
-        // Toggle password visibility
         document.querySelectorAll('.toggle-password').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const input = btn.previousElementSibling;
@@ -214,7 +212,6 @@
         
         let unverifiedEmail = "";
 
-        // Routing logic
         if (path === '/verify-email') {
             title.textContent = 'E-posta Doğrulama';
             desc.textContent = '';
@@ -319,7 +316,6 @@
             }
         });
 
-        // Login Submit
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -357,7 +353,6 @@
             }
         });
 
-        // Forgot Submit
         document.getElementById('forgot-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('forgot-email').value;
@@ -386,7 +381,6 @@
             }
         });
 
-        // Reset Submit
         document.getElementById('reset-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const password = document.getElementById('reset-password').value;

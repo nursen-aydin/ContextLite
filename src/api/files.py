@@ -51,7 +51,6 @@ async def upload_file(
     cursor = conn.cursor()
     
     try:
-        # Check if project belongs to user
         cursor.execute("SELECT id FROM projects WHERE id = ? AND user_id = ?", (project_id, user["id"]))
         if not cursor.fetchone():
             raise HTTPException(status_code=403, detail="Projeye erişim izniniz yok.")
@@ -61,7 +60,6 @@ async def upload_file(
             VALUES (?, ?, ?, ?, ?, ?)
         ''', (file_id, user["id"], project_id, file.filename, ext, size))
         
-        # Parse and chunk
         chunks_to_insert = []
         if ext == 'pdf':
             reader = PdfReader(file_path)
@@ -84,7 +82,6 @@ async def upload_file(
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (chunk_id, user["id"], project_id, file_id, page_num, chunk_index, chunk_text))
             
-            # Insert into FTS
             cursor.execute('''
                 INSERT INTO document_chunks_fts (rowid, content, chunk_id)
                 VALUES (last_insert_rowid(), ?, ?)
@@ -129,13 +126,11 @@ async def delete_file(file_id: str, user: dict = Depends(get_current_user)):
     for cid in chunk_ids:
         cursor.execute("DELETE FROM document_chunks_fts WHERE chunk_id = ?", (cid,))
         
-    # Delete from main tables
     cursor.execute("DELETE FROM files WHERE id = ?", (file_id,))
     
     conn.commit()
     conn.close()
     
-    # Delete file from disk
     file_path = os.path.join(UPLOAD_DIR, f"{file_id}.{row['file_type']}")
     if os.path.exists(file_path):
         os.remove(file_path)
